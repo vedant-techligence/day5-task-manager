@@ -29,6 +29,7 @@ export default function Quadrant({
               task={task}
               onUpdate={onUpdate}
               onDelete={onDelete}
+              showLabel={false}
             />
           ))}
         </ul>

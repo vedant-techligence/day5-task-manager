@@ -1,11 +1,47 @@
 import { useState } from "react";
 
-export default function TaskCard({ task, onUpdate, onDelete }) {
+function getQuadrant(urgent, important) {
+  if (urgent && important)
+    return {
+      label: "Urgent · Important",
+      borderColor: "border-red-500",
+      labelColor: "text-red-400 bg-red-500/10",
+    };
+  if (urgent && !important)
+    return {
+      label: "Urgent · Not Important",
+      borderColor: "border-amber-500",
+      labelColor: "text-amber-400 bg-amber-500/10",
+    };
+  if (!urgent && important)
+    return {
+      label: "Not Urgent · Important",
+      borderColor: "border-blue-500",
+      labelColor: "text-blue-400 bg-blue-500/10",
+    };
+  return {
+    label: "Not Urgent · Not Important",
+    borderColor: "border-zinc-600",
+    labelColor: "text-zinc-400 bg-zinc-700/50",
+  };
+}
+
+export default function TaskCard({
+  task,
+  onUpdate,
+  onDelete,
+  showLabel = true,
+}) {
   const [isEditing, setIsEditing] = useState(false);
   const [editingTitle, setEditingTitle] = useState("");
   const [updating, setUpdating] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
+
+  const quadrant = getQuadrant(task.urgent, task.important);
+  const borderColor = task.completed
+    ? "border-emerald-500"
+    : quadrant.borderColor;
 
   async function handleToggle() {
     setUpdating(true);
@@ -47,15 +83,24 @@ export default function TaskCard({ task, onUpdate, onDelete }) {
 
   return (
     <li
-      className={`flex flex-col gap-2 bg-zinc-800 border-l-4 ${task.completed ? "border-emerald-500" : "border-zinc-600"} rounded-lg px-4 py-3 ${deleting ? "opacity-50 pointer-events-none" : ""}`}
+      className={`flex flex-col gap-2 bg-zinc-800 border-l-4 ${borderColor} rounded-lg px-4 py-3 ${deleting ? "opacity-50 pointer-events-none" : ""}`}
     >
       <div className="flex items-center justify-between gap-2">
-        <span
-          className={`text-sm flex-1 ${task.completed ? "line-through text-zinc-500" : "text-zinc-200"}`}
-        >
-          {task.title}
-        </span>
-        <div className="flex items-center gap-1">
+        <div className="flex flex-col gap-1 flex-1 min-w-0">
+          {showLabel && !task.completed && (
+            <span
+              className={`self-start text-[10px] font-semibold tracking-wide px-1.5 py-0.5 rounded ${quadrant.labelColor}`}
+            >
+              {quadrant.label}
+            </span>
+          )}
+          <span
+            className={`text-sm ${task.completed ? "line-through text-zinc-500" : "text-zinc-200"}`}
+          >
+            {task.title}
+          </span>
+        </div>
+        <div className="flex items-center gap-1 shrink-0">
           <button
             onClick={handleToggle}
             disabled={updating}
