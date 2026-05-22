@@ -8,12 +8,12 @@ router.get('/', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const { title } = req.body;
+  const { title, urgent = 0, important = 0 } = req.body;
   if (!title || title.trim() === '') {
     return res.status(400).json({ error: 'Title is required' });
   }
 
-  const result = db.prepare('INSERT INTO tasks (title) VALUES (?)').run(title);
+  const result = db.prepare('INSERT INTO tasks (title, urgent, important) VALUES (?, ?, ?)').run(title, urgent, important);
   const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(result.lastInsertRowid);
   res.status(201).json(task);
 });
@@ -27,8 +27,10 @@ router.put('/:id', (req, res) => {
 
   const title = (req.body.title !== undefined) ? req.body.title : existingTask.title;
   const completed = (req.body.completed !== undefined) ? req.body.completed : existingTask.completed;
+  const urgent = (req.body.urgent !== undefined) ? req.body.urgent : existingTask.urgent;
+  const important = (req.body.important !== undefined) ? req.body.important : existingTask.important;
 
-  db.prepare('UPDATE tasks SET title = ?, completed = ? WHERE id = ?').run(title, completed, id);
+  db.prepare('UPDATE tasks SET title = ?, completed = ?, urgent = ?, important = ? WHERE id = ?').run(title, completed, urgent, important, id);
   const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(id);
   res.json(task);
 });
